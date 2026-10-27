@@ -40,6 +40,15 @@ async function exercise(forceWasm) {
   if (!(await page.locator("#prompt-note").innerText()).includes("All prompt words recognized")) {
     throw new Error("Surprise prompt contained words outside the supported vocabulary.");
   }
+  if ((await page.locator("#chips").count()) !== 0) throw new Error("The duplicate compact vocabulary widget still exists.");
+  const selectedTerms = page.locator("#vocabulary-list button[aria-pressed='true']");
+  if ((await selectedTerms.count()) !== 7) throw new Error("A surprise prompt did not select one vocabulary term per group.");
+  const replacement = page.locator("#vocabulary-list button[data-group='shape'][aria-pressed='false']").first();
+  const replacementTerm = (await replacement.innerText()).trim();
+  await replacement.click();
+  if ((await selectedTerms.count()) !== 7 || !(await page.locator("#prompt").inputValue()).includes(replacementTerm)) {
+    throw new Error("The primary vocabulary widget did not replace and select the chosen term.");
+  }
   await page.locator("#prompt").fill("tall green spooky pumpkin with star eyes fangs and blue glow");
   await page.locator("details:not(.vocabulary-guide) summary").click();
   await page.locator("#seed").fill("4242");

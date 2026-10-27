@@ -1,45 +1,18 @@
 import "./style.css";
 import { imageToAscii, imageToAsciiCells } from "./ascii";
 import { PumpkinGenerator } from "./inference";
-import { mulberry32 } from "./random";
 import {
-  GROUPS,
-  labelFromSelection,
   parsePrompt,
   VISUAL_VOCABULARY_SIZE,
   VOCABULARY_BY_GROUP,
   type GroupName,
 } from "./prompt";
+import { surprisePrompt, timeSeed } from "./surprise";
 
 const app = document.querySelector<HTMLDivElement>("#app");
 if (!app) throw new Error("App root was not found.");
 
-const defaultPrompt = "cheerful plump amber pumpkin with starry eyes and violet glow";
-
-function timeSeed(): number {
-  return Date.now() >>> 0;
-}
-
-function surprisePrompt(seed: number): string {
-  const random = mulberry32(seed);
-  const pick = (group: GroupName): string => {
-    const terms = VOCABULARY_BY_GROUP[group];
-    return terms[Math.floor(random() * terms.length)];
-  };
-  const shape = pick("shape");
-  const expression = pick("expression");
-  const eyes = pick("eyes");
-  const mouth = pick("mouth");
-  const color = pick("color");
-  const glow = pick("glow");
-  const accessory = pick("accessory");
-  const templates = [
-    `please carve me a ${expression} ${shape} ${color} pumpkin with ${eyes}, ${mouth}, ${glow}, and ${accessory}`,
-    `make me a ${shape} ${color} jack o lantern that is ${expression} with ${eyes}, ${mouth}, ${glow}, and ${accessory}`,
-    `a very ${expression} ${shape} ${color} pumpkin with ${eyes} and ${mouth}, plus ${glow} and ${accessory}`,
-  ];
-  return templates[Math.floor(random() * templates.length)];
-}
+const defaultPrompt = "please carve me a cheerful plump amber pumpkin with starry eyes, a toothy grin, violet glow, and a witch hat";
 
 app.innerHTML = `
   <header class="hero">
@@ -73,11 +46,10 @@ app.innerHTML = `
           <textarea id="prompt" rows="4" maxlength="180">${defaultPrompt}</textarea>
           <p class="prompt-note" id="prompt-note">Try color, shape, mood, eyes, mouth, glow, and a hat.</p>
           <details class="vocabulary-guide" open>
-            <summary><span><b>${VISUAL_VOCABULARY_SIZE}</b>-word prompt vocabulary</span><em>Click a word to try it</em></summary>
+            <summary><span><b>${VISUAL_VOCABULARY_SIZE}</b>-word prompt vocabulary</span><em>Choose one from every row</em></summary>
             <p>These playful synonyms map onto the 28 attributes the neural network learned.</p>
             <div class="vocabulary-list" id="vocabulary-list"></div>
           </details>
-          <div class="chip-groups" id="chips"></div>
           <div class="actions">
             <button class="carve-button" id="carve" type="submit" disabled><span>Carve it</span><b aria-hidden="true">✦</b></button>
             <button class="dice-button" id="surprise" type="button" aria-label="Create a time-seeded surprise prompt" title="New prompt and seed from the current time">⚄</button>
@@ -172,29 +144,6 @@ const generator = new PumpkinGenerator();
 let lastImage: ImageData | null = null;
 let busy = false;
 
-function renderChips(): void {
-  const container = document.querySelector<HTMLDivElement>("#chips")!;
-  (Object.keys(GROUPS) as GroupName[]).forEach((group) => {
-    const row = document.createElement("div");
-    row.className = "chip-row";
-    const label = document.createElement("span");
-    label.textContent = group;
-    row.append(label);
-    GROUPS[group].forEach((value, index) => {
-      const button = document.createElement("button");
-      button.type = "button";
-      button.className = "chip";
-      button.textContent = value;
-      button.dataset.group = group;
-      button.dataset.index = String(index);
-      button.addEventListener("click", () => selectChip(group, index));
-      row.append(button);
-    });
-    container.append(row);
-  });
-  updateChips();
-}
-
 function renderVocabulary(): void {
   const container = document.querySelector<HTMLDivElement>("#vocabulary-list")!;
   (Object.keys(VOCABULARY_BY_GROUP) as GroupName[]).forEach((group) => {
@@ -207,34 +156,37 @@ function renderVocabulary(): void {
       const button = document.createElement("button");
       button.type = "button";
       button.textContent = term;
-      button.addEventListener("click", () => {
-        promptInput.value = `${promptInput.value.trim()} ${term}`;
-        updatePromptFeedback();
-        promptInput.focus();
-      });
+      button.dataset.group = group;
+      button.dataset.term = term;
+      button.setAttribute("aria-pressed", "false");
+      button.addEventListener("click", () => selectVocabularyTerm(group, term));
       terms.append(button);
     });
     section.append(label, terms);
     container.append(section);
   });
+  updateVocabularySelection();
 }
 
-function selectChip(group: GroupName, index: number): void {
+function selectVocabularyTerm(group: GroupName, term: string): void {
   const parsed = parsePrompt(promptInput.value);
-  const current = labelFromSelection(group, parsed.selections[group]);
-  const replacement = labelFromSelection(group, index);
-  const pattern = new RegExp(current.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i");
-  promptInput.value = pattern.test(promptInput.value)
-    ? promptInput.value.replace(pattern, replacement)
-    : `${promptInput.value.trim()} ${replacement}`;
+  const current = parsed.matchedTerms[group];
+  const pattern = current
+    ? new RegExp(current.replace(/[.*+?^${}()|[\]\\]/g, "\\$&").replace(/\s+/g, "\\s+"), "i")
+    : null;
+  promptInput.value = pattern?.test(promptInput.value)
+    ? promptInput.value.replace(pattern, term)
+    : `${promptInput.value.trim()} ${term}`;
   updatePromptFeedback();
+  promptInput.focus();
 }
 
-function updateChips(): void {
+function updateVocabularySelection(): void {
   const parsed = parsePrompt(promptInput.value);
-  document.querySelectorAll<HTMLButtonElement>(".chip").forEach((chip) => {
-    const group = chip.dataset.group as GroupName;
-    chip.classList.toggle("selected", parsed.selections[group] === Number(chip.dataset.index));
+  document.querySelectorAll<HTMLButtonElement>("#vocabulary-list button").forEach((button) => {
+    const selected = parsed.matchedTerms[button.dataset.group as GroupName] === button.dataset.term;
+    button.classList.toggle("selected", selected);
+    button.setAttribute("aria-pressed", String(selected));
   });
 }
 
@@ -242,9 +194,9 @@ function updatePromptFeedback(): void {
   const parsed = parsePrompt(promptInput.value);
   promptNote.textContent = parsed.unknown.length
     ? `Tiny vocabulary note: I don’t know “${parsed.unknown.join("”, “")}” yet, so those words will be ignored.`
-    : `All prompt words recognized from the ${VISUAL_VOCABULARY_SIZE}-word vocabulary. The chips show the 7 conditions sent to the network.`;
+    : `All prompt words recognized. Highlighted vocabulary terms show the 7 conditions sent to the network.`;
   promptNote.classList.toggle("warning", parsed.unknown.length > 0);
-  updateChips();
+  updateVocabularySelection();
 }
 
 function drawImage(image: ImageData): void {
@@ -321,7 +273,6 @@ copyAsciiButton.addEventListener("click", async () => {
   if (lastImage) await navigator.clipboard.writeText(imageToAscii(lastImage));
 });
 
-renderChips();
 renderVocabulary();
 updatePromptFeedback();
 if ("serviceWorker" in navigator && import.meta.env.PROD) {

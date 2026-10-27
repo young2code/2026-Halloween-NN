@@ -13,6 +13,7 @@ export type ParsedPrompt = {
   selections: Record<GroupName, number>;
   vector: Float32Array;
   recognized: string[];
+  matchedTerms: Partial<Record<GroupName, string>>;
   unknown: string[];
 };
 
@@ -153,26 +154,28 @@ export function parsePrompt(input: string): ParsedPrompt {
   const consumed = new Set<number>();
   const words = normalized.split(/\s+/).filter(Boolean);
   const recognized: string[] = [];
+  const matchedTerms: Partial<Record<GroupName, string>> = {};
 
-  for (let i = 0; i < words.length - 1; i += 1) {
+  for (let i = 0; i < words.length; i += 1) {
     const phrase = `${words[i]} ${words[i + 1]}`;
-    const match = aliases[phrase];
-    if (match) {
-      selections[match[0]] = match[1];
+    const phraseMatch = aliases[phrase];
+    if (phraseMatch) {
+      selections[phraseMatch[0]] = phraseMatch[1];
+      matchedTerms[phraseMatch[0]] = phrase;
       recognized.push(phrase);
       consumed.add(i);
       consumed.add(i + 1);
+      i += 1;
+      continue;
+    }
+    const wordMatch = aliases[words[i]];
+    if (wordMatch) {
+      selections[wordMatch[0]] = wordMatch[1];
+      matchedTerms[wordMatch[0]] = words[i];
+      recognized.push(words[i]);
+      consumed.add(i);
     }
   }
-
-  words.forEach((word, index) => {
-    if (consumed.has(index)) return;
-    const match = aliases[word];
-    if (match) {
-      selections[match[0]] = match[1];
-      recognized.push(word);
-    }
-  });
 
   const unknown = [...new Set(words.filter((word, i) => !consumed.has(i) && !aliases[word] && !ignored.has(word)))];
   const vector = new Float32Array(Object.values(GROUPS).reduce((sum, values) => sum + values.length, 0));
@@ -182,10 +185,6 @@ export function parsePrompt(input: string): ParsedPrompt {
     offset += GROUPS[group].length;
   });
 
-  return { selections, vector, recognized, unknown };
-}
-
-export function labelFromSelection(group: GroupName, index: number): string {
-  return GROUPS[group][index] ?? GROUPS[group][0];
+  return { selections, vector, recognized, matchedTerms, unknown };
 }
 

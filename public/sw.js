@@ -1,4 +1,4 @@
-const CACHE = "tiny-pumpkin-machine-v5";
+const CACHE = "tiny-pumpkin-machine-v6";
 
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(["./", "./generator.onnx"])));

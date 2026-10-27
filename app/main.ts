@@ -106,7 +106,7 @@ app.innerHTML = `
   </main>
 
   <footer>
-    <p>Made as a small, inspectable AI learning project.</p>
+    <p>Made as a small, inspectable AI learning project. Implemented with assistance from OpenAI Codex using <a href="https://developers.openai.com/api/docs/models/gpt-5.6-sol">GPT-5.6 Sol</a>.</p>
     <a href="#top">Back to the moon ↑</a>
   </footer>
 `;

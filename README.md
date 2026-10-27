@@ -245,3 +245,8 @@ underlying techniques; third-party libraries retain their own licenses in
 
 Code and the procedural dataset recipe are released under the [MIT License](LICENSE).
 
+## AI assistance disclosure
+
+This project was implemented with assistance from OpenAI Codex using
+[GPT-5.6 Sol (`gpt-5.6-sol`)](https://developers.openai.com/api/docs/models/gpt-5.6-sol).
+

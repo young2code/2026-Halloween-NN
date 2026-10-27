@@ -71,16 +71,25 @@ app.innerHTML = `
         <div class="result-panel">
           <div class="result-heading">
             <p class="eyebrow">The same pumpkin, translated</p>
-            <h3 id="output-title">Colored ASCII portrait</h3>
+            <h3>One pumpkin, two portraits</h3>
           </div>
-          <div class="canvas-frame" id="canvas-frame">
-            <pre id="ascii-output" aria-label="Colored ASCII version of the generated pumpkin"></pre>
-            <canvas id="pumpkin-canvas" width="512" height="512" aria-label="Generated jack-o'-lantern" hidden></canvas>
-            <div class="canvas-placeholder" id="placeholder"><span>✦</span><b>Warming the lantern…</b><small>The tiny model loads once, then stays on your device.</small></div>
+          <div class="output-comparison">
+            <section class="output-view" aria-labelledby="image-view-title">
+              <h4 id="image-view-title">Generated pumpkin</h4>
+              <div class="canvas-frame">
+                <canvas id="pumpkin-canvas" width="512" height="512" aria-label="Generated jack-o'-lantern"></canvas>
+                <div class="canvas-placeholder" id="placeholder"><span>✦</span><b>Warming the lantern…</b><small>The tiny model loads once, then stays on your device.</small></div>
+              </div>
+            </section>
+            <section class="output-view" aria-labelledby="ascii-view-title">
+              <h4 id="ascii-view-title">Colored ASCII portrait</h4>
+              <div class="canvas-frame ascii-frame">
+                <pre id="ascii-output" aria-label="Colored ASCII version of the generated pumpkin"></pre>
+              </div>
+            </section>
           </div>
           <div class="result-actions">
             <button type="button" id="again" disabled>Carve again</button>
-            <button type="button" id="ascii-toggle" aria-pressed="true" disabled>Show image</button>
             <button type="button" id="copy-ascii" disabled>Copy plain text</button>
             <button type="button" id="download" disabled>Download PNG</button>
           </div>
@@ -131,10 +140,8 @@ const carveButton = document.querySelector<HTMLButtonElement>("#carve")!;
 const surpriseButton = document.querySelector<HTMLButtonElement>("#surprise")!;
 const againButton = document.querySelector<HTMLButtonElement>("#again")!;
 const downloadButton = document.querySelector<HTMLButtonElement>("#download")!;
-const asciiToggle = document.querySelector<HTMLButtonElement>("#ascii-toggle")!;
 const copyAsciiButton = document.querySelector<HTMLButtonElement>("#copy-ascii")!;
 const asciiOutput = document.querySelector<HTMLElement>("#ascii-output")!;
-const outputTitle = document.querySelector<HTMLElement>("#output-title")!;
 const runtimePill = document.querySelector<HTMLElement>("#runtime-pill")!;
 const placeholder = document.querySelector<HTMLElement>("#placeholder")!;
 const status = document.querySelector<HTMLElement>("#generation-status")!;
@@ -261,7 +268,6 @@ async function generate(): Promise<void> {
     status.textContent = `Carved locally in ${elapsed}s · seed ${seed}`;
     againButton.disabled = false;
     downloadButton.disabled = false;
-    asciiToggle.disabled = false;
     copyAsciiButton.disabled = false;
   } catch (error) {
     status.textContent = `Generation failed: ${error instanceof Error ? error.message : String(error)}`;
@@ -281,14 +287,6 @@ surpriseButton.addEventListener("click", () => {
 againButton.addEventListener("click", () => {
   seedInput.value = String(crypto.getRandomValues(new Uint32Array(1))[0]);
   void generate();
-});
-asciiToggle.addEventListener("click", () => {
-  const showAscii = asciiOutput.hidden;
-  asciiOutput.hidden = !showAscii;
-  canvas.hidden = showAscii;
-  asciiToggle.textContent = showAscii ? "Show image" : "Show ASCII";
-  asciiToggle.setAttribute("aria-pressed", String(showAscii));
-  outputTitle.textContent = showAscii ? "Colored ASCII portrait" : "Generated pumpkin";
 });
 downloadButton.addEventListener("click", () => {
   const link = document.createElement("a");

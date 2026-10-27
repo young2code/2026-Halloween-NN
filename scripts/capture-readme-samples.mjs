@@ -29,7 +29,6 @@ try {
     path: path.join(outputDirectory, "sample-output-ascii.png"),
   });
 
-  await page.locator("#ascii-toggle").click();
   await page.locator("#pumpkin-canvas").screenshot({
     path: path.join(outputDirectory, "sample-output-image.png"),
   });

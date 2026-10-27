@@ -33,15 +33,27 @@ async function exercise(forceWasm) {
   await page.locator("#carve").click();
   await page.locator("#generation-status").filter({ hasText: "seed 4242" }).waitFor({ timeout: 30_000 });
   await page.locator("#ascii-output").waitFor({ state: "visible" });
+  await page.locator("#pumpkin-canvas").waitFor({ state: "visible" });
   const asciiRows = await page.locator(".ascii-row").count();
-  if ((await page.locator("#ascii-toggle").innerText()).trim() !== "SHOW IMAGE") {
-    throw new Error("ASCII portrait was not the default result view.");
+  const outputViews = await page.locator(".output-view").count();
+  if (outputViews !== 2) throw new Error(`Expected two simultaneous output views, found ${outputViews}.`);
+  const frames = await page.locator(".output-view .canvas-frame").evaluateAll((elements) =>
+    elements.map((element) => {
+      const { x, width, height } = element.getBoundingClientRect();
+      return { x, width, height };
+    }),
+  );
+  if (
+    frames.length !== 2
+    || Math.abs(frames[0].width - frames[1].width) > 1
+    || Math.abs(frames[0].height - frames[1].height) > 1
+    || frames[1].x <= frames[0].x + frames[0].width
+  ) {
+    throw new Error(`Output frames were not equal-sized and side by side: ${JSON.stringify(frames)}`);
   }
   if (!forceWasm) {
     await page.screenshot({ path: path.resolve("training/runs/browser-preview.png"), fullPage: true });
   }
-  await page.locator("#ascii-toggle").click();
-  await page.locator("#pumpkin-canvas").waitFor({ state: "visible" });
   const canvasSignal = await page.locator("#pumpkin-canvas").evaluate((canvas) => {
     const context = canvas.getContext("2d");
     return [...context.getImageData(0, 0, 8, 8).data].reduce((sum, value) => sum + value, 0);

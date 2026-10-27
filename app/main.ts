@@ -17,7 +17,7 @@ app.innerHTML = `
   <header class="hero">
     <nav aria-label="Primary navigation">
       <a class="brand" href="#top" aria-label="Tiny Pumpkin Machine home"><span>✦</span> TPM</a>
-      <div><a href="#learn">How it learns</a><a href="https://github.com/" data-repo-link>Source</a></div>
+      <div><a href="#learn">How it learns</a><a href="https://github.com/young2code/2026-Halloween-NN">Source</a></div>
     </nav>
     <div class="hero-copy" id="top">
       <p class="eyebrow">A pocket-sized neural network</p>

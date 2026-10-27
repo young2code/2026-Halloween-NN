@@ -10,8 +10,8 @@ the static assets load, prompts and images stay on the visitor's device.
 
 ## Try it
 
-The public GitHub Pages URL will be added here when the first release is
-published.
+Open the live, zero-server demo at
+**[young2code.github.io/2026-Halloween-NN](https://young2code.github.io/2026-Halloween-NN/)**.
 
 The prompt understands a deliberately small vocabulary:
 

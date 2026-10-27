@@ -26,6 +26,23 @@ silly green lumpy pumpkin with round eyes and a witch hat
 Unknown words are shown rather than silently pretending that the model
 understands unrestricted English.
 
+## Sample output
+
+The two views below come from the released neural network with the same prompt
+and seed—not directly from the cleaner Pillow dataset renderer.
+
+> **Prompt:** `tall green spooky pumpkin with star eyes fangs and blue glow`  
+> **Seed:** `4242`
+
+| Generated 64×64 image (enlarged) | Colored ASCII translation |
+|:---:|:---:|
+| ![A generated tall green spooky jack-o'-lantern with star eyes, fangs, and blue glow](docs/sample-output-image.png) | ![A colored ASCII portrait translated from the same generated jack-o'-lantern](docs/sample-output-ascii.png) |
+
+The ASCII portrait contains no extra model inference. It samples this exact
+generated image, chooses characters by brightness, and colors them with the
+sampled RGB pixels. Run `npm run capture:readme` while the local preview server
+is open to recreate both documentation images.
+
 ## What happens when I click “Carve it”?
 
 ```text

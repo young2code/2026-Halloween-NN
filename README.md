@@ -26,23 +26,6 @@ silly green lumpy pumpkin with round eyes and a witch hat
 Unknown words are shown rather than silently pretending that the model
 understands unrestricted English.
 
-## Sample output
-
-The two views below come from the released neural network with the same prompt
-and seed—not directly from the cleaner Pillow dataset renderer.
-
-> **Prompt:** `tall green spooky pumpkin with star eyes fangs and blue glow`  
-> **Seed:** `4242`
-
-| Generated 64×64 image (enlarged) | Colored ASCII translation |
-|:---:|:---:|
-| ![A generated tall green spooky jack-o'-lantern with star eyes, fangs, and blue glow](docs/sample-output-image.png) | ![A colored ASCII portrait translated from the same generated jack-o'-lantern](docs/sample-output-ascii.png) |
-
-The ASCII portrait contains no extra model inference. It samples this exact
-generated image, chooses characters by brightness, and colors them with the
-sampled RGB pixels. Run `npm run capture:readme` while the local preview server
-is open to recreate both documentation images.
-
 ## What happens when I click “Carve it”?
 
 ```text
@@ -150,6 +133,24 @@ seeds; it does not download any assets.
 
 See [DATASET_CARD.md](DATASET_CARD.md) for provenance and limitations.
 
+### Sample generated output
+
+The two views below come from the released neural network with the same prompt
+and seed—not directly from the cleaner Pillow dataset renderer above.
+
+> **Prompt:** `tall green spooky pumpkin with star eyes fangs and blue glow`
+>
+> **Seed:** `4242`
+
+| Generated 64×64 image (enlarged) | Colored ASCII translation |
+|:---:|:---:|
+| ![A generated tall green spooky jack-o'-lantern with star eyes, fangs, and blue glow](docs/sample-output-image.png) | ![A colored ASCII portrait translated from the same generated jack-o'-lantern](docs/sample-output-ascii.png) |
+
+The ASCII portrait contains no extra model inference. It samples this exact
+generated image, chooses characters by brightness, and colors them with the
+sampled RGB pixels. Run `npm run capture:readme` while the local preview server
+is open to recreate both documentation images.
+
 ## Architecture
 
 ### Training path
@@ -228,6 +229,21 @@ python -m training.train --samples 61440 --epochs 100 --batch-size 128
 python -m export.export_onnx
 ```
 
+### Reference training hardware and time
+
+| Item | Released model |
+|---|---:|
+| Graphics card | NVIDIA GeForce RTX 4070 SUPER |
+| GPUs used | 1 |
+| Training samples | 61,440 balanced procedural images |
+| Training epochs | 100 |
+| Final training time | About 0.5 hours (30 minutes) |
+| Compute used by the final run | About 0.5 GPU-hours |
+
+These timings describe the final 100-epoch training run. They do not include
+earlier architecture experiments, browser development, or documentation work.
+Training time will vary with the GPU, batch size, cooling, and software setup.
+
 Training writes checkpoints, history, and fixed-seed sample sheets under
 `training/runs/`. These artifacts are ignored by Git except for the selected
 ONNX generator copied to `public/`.
@@ -235,10 +251,8 @@ ONNX generator copied to `public/`.
 The export command checks the ONNX graph, compares ONNX Runtime output with
 PyTorch output, and rejects a model larger than the release budget.
 
-The improved reference release used 61,440 balanced procedural samples for 100
-epochs on an RTX 4070 SUPER. Training took about 30 minutes. Its 2,600,739-
-parameter generator is 9.99 MiB; the fixed export check measured a maximum
-PyTorch/ONNX error of 0.00000830.
+The released generator has 2,600,739 parameters and is 9.99 MiB. The fixed
+export check measured a maximum PyTorch/ONNX error of 0.00000830.
 
 ## Tests
 

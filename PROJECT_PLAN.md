@@ -72,7 +72,7 @@ Training (developer machine; not part of the deployed app)
 Procedural dataset generator + optional original artwork
                          |
                          v
-              labeled 128x128 images
+               labeled 64x64 images
                          |
                          v
           PyTorch conditional GAN training
@@ -95,7 +95,7 @@ Seed ----------------------> latent vector -------+--> ONNX generator
                                                         |
                                     WebGPU preferred / WASM fallback
                                                         |
-                                              128x128 RGB image
+                                               64x64 RGB image
                                                         |
                                   display / upscale / PNG / ASCII
 ```

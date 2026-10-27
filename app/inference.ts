@@ -40,15 +40,18 @@ export class PumpkinGenerator {
     });
     const tensor = output.image;
     if (!tensor || !(tensor.data instanceof Float32Array)) throw new Error("The model returned an unexpected image.");
-    const pixels = new Uint8ClampedArray(128 * 128 * 4);
-    const plane = 128 * 128;
+    const height = tensor.dims[2];
+    const width = tensor.dims[3];
+    if (!height || !width) throw new Error("The model returned an image without dimensions.");
+    const pixels = new Uint8ClampedArray(width * height * 4);
+    const plane = width * height;
     for (let i = 0; i < plane; i += 1) {
       pixels[i * 4] = Math.round(Math.max(0, Math.min(1, (tensor.data[i] + 1) / 2)) * 255);
       pixels[i * 4 + 1] = Math.round(Math.max(0, Math.min(1, (tensor.data[plane + i] + 1) / 2)) * 255);
       pixels[i * 4 + 2] = Math.round(Math.max(0, Math.min(1, (tensor.data[plane * 2 + i] + 1) / 2)) * 255);
       pixels[i * 4 + 3] = 255;
     }
-    return new ImageData(pixels, 128, 128);
+    return new ImageData(pixels, width, height);
   }
 }
 

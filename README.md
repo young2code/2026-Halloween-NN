@@ -1,7 +1,7 @@
 # Tiny Pumpkin Machine
 
 Tiny Pumpkin Machine is a small, educational conditional GAN that creates
-128×128 illustrated jack-o'-lanterns entirely inside a web browser. The model,
+64×64 illustrated jack-o'-lanterns entirely inside a web browser. The model,
 prompt parser, WebGPU/WASM inference, colored ASCII conversion, procedural
 dataset, training loop, and deployment configuration are all in this repository.
 
@@ -13,7 +13,9 @@ the static assets load, prompts and images stay on the visitor's device.
 Open the live, zero-server demo at
 **[young2code.github.io/2026-Halloween-NN](https://young2code.github.io/2026-Halloween-NN/)**.
 
-The prompt understands a deliberately small vocabulary:
+The prompt understands 100 visual words and phrases mapped onto its 28 trained
+controls. Synonyms make the tiny vocabulary more playful without pretending the
+model understands unrestricted language:
 
 ```text
 happy round orange pumpkin with star eyes and purple glow
@@ -32,7 +34,7 @@ controlled prompt
       v
 28-value condition vector ----+
                                |
-96 seeded random values -------+--> generator.onnx --> 128x128 RGB image
+96 seeded random values -------+--> generator.onnx --> 64x64 RGB image
                                                        |
                                      +-----------------+---------------+
                                      |                 |               |
@@ -44,10 +46,32 @@ controlled prompt
    accessory.
 2. A seeded pseudo-random number generator creates 96 values called the
    **latent vector**. The seed makes an image reproducible.
-3. The condition and latent vectors enter a 1.2-million-parameter generator.
-4. ONNX Runtime Web executes that 1,213,667-parameter network with WebGPU where available and a
+3. The condition and latent vectors enter a compact convolutional generator.
+4. ONNX Runtime Web executes that network with WebGPU where available and a
    WebAssembly CPU fallback elsewhere.
 5. The browser converts the output tensor to pixels. Nothing is uploaded.
+
+## How the colored ASCII portrait works
+
+The ASCII view is a deterministic browser effect, not a second AI model. After
+the GAN creates an RGB image, [`app/ascii.ts`](app/ascii.ts) performs four small
+steps:
+
+1. Divide the image into 44 columns. The row count compensates for text
+   characters being taller than they are wide.
+2. Sample the red, green, and blue values near the center of every grid cell.
+3. Convert the sampled color to perceived brightness with
+   `0.2126R + 0.7152G + 0.0722B`.
+4. Use that brightness to choose a character from this dark-to-light ramp:
+
+```text
+ .,:;irsXA253hMHGS#9B&@
+```
+
+Each character is then wrapped in a tiny HTML element colored with its sampled
+RGB value. The character describes brightness; its CSS color preserves the
+original pumpkin palette. “Copy plain text” removes the colors but keeps the
+characters and line breaks.
 
 ## How a conditional GAN learns
 
@@ -62,8 +86,11 @@ opposing jobs:
 They improve through competition. The discriminator becomes a more careful
 critic, while the generator learns which patterns make its output convincing.
 Our training loop uses a hinge adversarial loss, a projection discriminator for
-conditioning, spectral normalization for stability, and an exponential moving
-average (EMA) of generator weights for cleaner inference.
+conditioning, a seven-group auxiliary attribute classifier, balanced condition
+combinations, spectral normalization for stability, and an exponential moving
+average (EMA) of generator weights for cleaner inference. Nearest-neighbor
+upsampling followed by convolution avoids the checkerboard artifacts commonly
+introduced by transposed convolutions.
 
 After training, the discriminator has finished its teaching job. The deployed
 website contains only the EMA generator, reducing download and inference cost.
@@ -180,7 +207,7 @@ Conda and the CUDA-enabled environment file:
 conda env create -f environment.yml
 conda activate tiny-pumpkin-machine
 python -m training.preview_dataset
-python -m training.train --samples 6000 --epochs 45 --batch-size 64
+python -m training.train --samples 61440 --epochs 100 --batch-size 128
 python -m export.export_onnx
 ```
 
@@ -191,9 +218,10 @@ ONNX generator copied to `public/`.
 The export command checks the ONNX graph, compares ONNX Runtime output with
 PyTorch output, and rejects a model larger than the release budget.
 
-The reference release used 6,000 procedural samples for 45 epochs on an RTX
-4070 SUPER. Training took about 142 seconds. Its generator is 4.67 MiB; the
-fixed export check measured a maximum PyTorch/ONNX error of 0.00000167.
+The improved reference release used 61,440 balanced procedural samples for 100
+epochs on an RTX 4070 SUPER. Training took about 30 minutes. Its 2,600,739-
+parameter generator is 9.99 MiB; the fixed export check measured a maximum
+PyTorch/ONNX error of 0.00000830.
 
 ## Tests
 
@@ -220,7 +248,7 @@ method is required.
 - It only generates stylized jack-o'-lanterns in the procedural dataset's world.
 - GAN training can suffer from mode collapse or imperfect condition following.
 - WebGPU support varies; WASM is slower but broadly compatible.
-- The 128×128 output is enlarged with hard pixel edges rather than invented
+- The native 64×64 output is enlarged with hard pixel edges rather than invented
   high-resolution detail.
 
 See [MODEL_CARD.md](MODEL_CARD.md) for intended use and additional limitations.

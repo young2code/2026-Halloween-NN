@@ -3,7 +3,7 @@
 ## Summary
 
 Tiny Pumpkin Machine is a small conditional generative adversarial network
-(cGAN) that produces 128×128 illustrated pixel-art jack-o'-lanterns. It is
+(cGAN) that produces 64×64 illustrated pixel-art jack-o'-lanterns. It is
 designed for teaching and browser inference, not photorealism.
 
 ## Inputs and output
@@ -11,7 +11,7 @@ designed for teaching and browser inference, not photorealism.
 - `latent`: 96 normally distributed random values.
 - `condition`: a 28-value vector containing one selected value from each of
   seven groups: shape, expression, eyes, mouth, color, glow, and accessory.
-- `image`: an RGB tensor with shape `1 × 3 × 128 × 128` and values in `[-1, 1]`.
+- `image`: an RGB tensor with shape `1 × 3 × 64 × 64` and values in `[-1, 1]`.
 
 The browser converts a controlled English prompt into the condition vector.
 Words outside the documented vocabulary are ignored and shown to the user.
@@ -19,23 +19,27 @@ Words outside the documented vocabulary are ignored and shown to the user.
 ## Architecture
 
 The generator projects the concatenated latent and condition vectors into a
-4×4 feature map, then applies five transposed-convolution stages. Batch
-normalization and ReLU activations are used between stages, with `tanh` at the
-output. The discriminator is a projection discriminator with spectrally
-normalized convolution and linear layers. Only the generator is exported.
+4×4 feature map, then applies four nearest-neighbor upsampling and convolution
+stages. Batch normalization and Leaky ReLU activations are used between stages,
+with `tanh` at the output. The discriminator combines projection conditioning,
+spectrally normalized layers, and an auxiliary classifier for all seven
+attribute groups. Only the generator is exported.
 
-The released EMA generator has 1,213,667 trainable parameters and occupies
-4.67 MiB in ONNX format. PyTorch and ONNX Runtime outputs differed by at most
-0.00000167 in the fixed export-parity test.
+The released EMA generator has 2,600,739 trainable parameters and occupies
+9.99 MiB in ONNX format. PyTorch and ONNX Runtime outputs differed by at most
+0.00000830 in the fixed export-parity test.
 
 ## Training
 
 - Hardware: NVIDIA GeForce RTX 4070 SUPER with 12 GB VRAM.
-- Dataset: 6,000 deterministic procedural samples.
-- Schedule: 45 epochs, batch size 64, Adam with learning rate 0.0002.
-- Objective: hinge adversarial loss with a projection discriminator.
-- Stabilization: spectral normalization and generator EMA with decay 0.995.
-- Wall time: approximately 142 seconds on the training hardware.
+- Dataset: 61,440 deterministic procedural samples, covering every one of the
+  15,360 condition combinations with four visual variants.
+- Schedule: 100 epochs, batch size 128, Adam with learning rate 0.0002.
+- Objective: hinge adversarial loss, mismatched-condition negatives, projection
+  conditioning, and grouped auxiliary classification.
+- Stabilization: spectral normalization, mixed-precision training, and
+  generator EMA with decay 0.999.
+- Wall time: approximately 30 minutes on the training hardware.
 
 The browser smoke test generated on the WASM CPU path in approximately 0.02
 seconds in headless Chrome. Performance varies by device and browser.

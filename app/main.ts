@@ -84,12 +84,12 @@ app.innerHTML = `
         <p>A GAN learns through a contest between two neural networks. We train both; your browser only needs the artist.</p>
       </div>
       <ol class="learning-flow">
-        <li><span class="flow-number">1</span><div><h3>The generator imagines</h3><p>Random numbers and seven chosen attributes enter a compact convolutional network. It turns them into a 128×128 image.</p></div></li>
+        <li><span class="flow-number">1</span><div><h3>The generator imagines</h3><p>Random numbers and seven chosen attributes enter a compact convolutional network. It turns them into a crisp 64×64 image that scales cleanly for pixel art.</p></div></li>
         <li><span class="flow-number">2</span><div><h3>The discriminator critiques</h3><p>A second network compares generated pumpkins with our labeled procedural artwork and learns to spot the fakes.</p></div></li>
         <li><span class="flow-number">3</span><div><h3>Both improve</h3><p>The artist learns to fool the critic; the critic gets sharper. After training, we discard the critic and export only the small generator.</p></div></li>
       </ol>
       <div class="model-facts">
-        <div><strong>128²</strong><span>output pixels</span></div>
+        <div><strong>64²</strong><span>native pixels</span></div>
         <div><strong>28</strong><span>condition values</span></div>
         <div><strong>0</strong><span>server requests per image</span></div>
       </div>

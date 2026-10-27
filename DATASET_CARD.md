@@ -3,8 +3,8 @@
 ## Overview
 
 The training set is generated locally by `training/dataset.py`. It uses Pillow
-to draw original 64×64 pixel-art scenes that are enlarged to 128×128 with
-nearest-neighbor sampling. No photographs, scraped images, generated images
+to draw original 64×64 pixel-art scenes at the model's native resolution.
+No photographs, scraped images, generated images
 from an outside model, or personal information are used.
 
 ## Labels
@@ -19,7 +19,8 @@ Every sample contains one value from each group:
 - 4 glow colors
 - 4 accessories
 
-The same integer seed always reconstructs the same labels and image. This makes
+The training sampler enumerates all 15,360 categorical combinations before it
+repeats one, while each integer seed adds deterministic visual variation. This makes
 the dataset reproducible without storing thousands of image files in Git.
 
 ## Provenance and license

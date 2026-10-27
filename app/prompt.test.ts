@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parsePrompt } from "./prompt";
+import { parsePrompt, VISUAL_VOCABULARY_SIZE } from "./prompt";
 
 describe("parsePrompt", () => {
   it("turns a friendly prompt into one-hot conditions", () => {
@@ -16,6 +16,13 @@ describe("parsePrompt", () => {
 
   it("reports words outside the tiny vocabulary", () => {
     expect(parsePrompt("pumpkin riding a bicycle").unknown).toEqual(["riding", "bicycle"]);
+  });
+
+  it("supports a broad but bounded visual vocabulary", () => {
+    expect(VISUAL_VOCABULARY_SIZE).toBe(100);
+    const result = parsePrompt("a towering emerald haunted pumpkin with sparkle eyes and a wizard hat");
+    expect(result.unknown).toEqual([]);
+    expect(result.selections).toMatchObject({ shape: 1, expression: 4, eyes: 2, color: 1, accessory: 1 });
   });
 });
 

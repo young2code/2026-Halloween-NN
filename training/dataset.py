@@ -24,6 +24,15 @@ def labels_for_seed(seed: int) -> dict[str, int]:
     return {group: rng.randrange(len(values)) for group, values in CATEGORIES.items()}
 
 
+def labels_for_index(index: int) -> dict[str, int]:
+    """Enumerate every categorical combination before repeating any of them."""
+    labels: dict[str, int] = {}
+    for group, values in CATEGORIES.items():
+        labels[group] = index % len(values)
+        index //= len(values)
+    return labels
+
+
 def _star(cx: float, cy: float, outer: float, inner: float) -> list[tuple[float, float]]:
     points = []
     for i in range(10):
@@ -166,17 +175,19 @@ class PumpkinSample:
 
 
 class PumpkinDataset(Dataset[tuple[torch.Tensor, torch.Tensor]]):
-    def __init__(self, count: int, seed: int = 20261031, cache: bool = True) -> None:
+    def __init__(self, count: int, seed: int = 20261031, cache: bool = True, size: int = 64, balanced: bool = True) -> None:
         self.count = count
         self.seed = seed
+        self.size = size
+        self.balanced = balanced
         self.samples: list[PumpkinSample] | None = None
         if cache:
             self.samples = [self._make_sample(index) for index in range(count)]
 
     def _make_sample(self, index: int) -> PumpkinSample:
         sample_seed = self.seed + index * 7919
-        labels = labels_for_seed(sample_seed)
-        image = np.asarray(render_pumpkin(labels, sample_seed), dtype=np.uint8).copy()
+        labels = labels_for_index(index) if self.balanced else labels_for_seed(sample_seed)
+        image = np.asarray(render_pumpkin(labels, sample_seed, size=self.size), dtype=np.uint8).copy()
         condition = np.asarray(encode_condition(labels), dtype=np.float32)
         return PumpkinSample(image=image, condition=condition)
 

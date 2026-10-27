@@ -129,7 +129,17 @@ const aliases: Record<string, [GroupName, number]> = {
   leaf: ["accessory", 3],
 };
 
-export const VISUAL_VOCABULARY_SIZE = Object.keys(aliases).length;
+export const VOCABULARY_BY_GROUP = (Object.keys(GROUPS) as GroupName[]).reduce(
+  (vocabulary, group) => {
+    vocabulary[group] = Object.entries(aliases)
+      .filter(([, [aliasGroup]]) => aliasGroup === group)
+      .map(([term]) => term);
+    return vocabulary;
+  },
+  {} as Record<GroupName, string[]>,
+);
+
+export const VISUAL_VOCABULARY_SIZE = Object.values(VOCABULARY_BY_GROUP).flat().length;
 
 const ignored = new Set([
   "a", "an", "the", "with", "and", "pumpkin", "jack", "o", "lantern", "jackolantern",

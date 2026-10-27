@@ -23,10 +23,12 @@ async function exercise(forceWasm) {
   await page.goto(baseUrl, { waitUntil: "networkidle" });
   await page.locator("#runtime-pill.ready").waitFor({ timeout: 30_000 });
   await page.locator("#generation-status").filter({ hasText: "Carved locally" }).waitFor({ timeout: 30_000 });
+  const vocabularyTerms = await page.locator("#vocabulary-list button").count();
+  if (vocabularyTerms !== 100) throw new Error(`Expected 100 visible vocabulary terms, found ${vocabularyTerms}.`);
   const runtime = (await page.locator("#runtime-pill").innerText()).trim();
   const firstStatus = (await page.locator("#generation-status").innerText()).trim();
   await page.locator("#prompt").fill("tall green spooky pumpkin with star eyes fangs and blue glow");
-  await page.locator("details summary").click();
+  await page.locator("details:not(.vocabulary-guide) summary").click();
   await page.locator("#seed").fill("4242");
   await page.locator("#carve").click();
   await page.locator("#generation-status").filter({ hasText: "seed 4242" }).waitFor({ timeout: 30_000 });

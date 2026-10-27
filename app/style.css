@@ -58,6 +58,20 @@ h1 em { color: var(--orange); font-weight: 500; }
 textarea { width: 100%; resize: vertical; min-height: 8rem; border: 1px solid #806c76; background: #f8efd9; color: var(--ink); padding: 1rem; font-family: "Fraunces", Georgia, serif; font-size: 1.35rem; line-height: 1.35; outline: none; }
 textarea:focus { border-color: var(--orange); box-shadow: 0 0 0 3px #ff6b2225; }
 .prompt-note { min-height: 2.8rem; margin: .7rem 0 1.4rem; color: #665962; font-size: .75rem; line-height: 1.5; }.prompt-note.warning{color:#9c4126}
+.vocabulary-guide { margin: 0 0 1.5rem; padding: 0; border: 1px solid #a38e96; color: #5f4d5a; background: #e3d5b7; }
+.vocabulary-guide summary { display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding: .8rem 1rem; background: #d7c59f; color: var(--ink); list-style: none; }
+.vocabulary-guide summary::-webkit-details-marker { display: none; }
+.vocabulary-guide summary span { font: 600 .72rem "DM Mono", monospace; letter-spacing: .04em; text-transform: uppercase; }
+.vocabulary-guide summary b { color: var(--orange); }
+.vocabulary-guide summary em { font: 500 .62rem "DM Mono", monospace; color: #715e68; text-transform: uppercase; }
+.vocabulary-guide > p { margin: .8rem 1rem .2rem; font-size: .7rem; line-height: 1.5; }
+.vocabulary-list { max-height: 13rem; overflow: auto; padding: .55rem 1rem 1rem; scrollbar-color: #8f7883 transparent; }
+.vocabulary-group { display: grid; grid-template-columns: 4.5rem 1fr; gap: .5rem; align-items: start; padding: .45rem 0; border-bottom: 1px solid #8e79852e; }
+.vocabulary-group:last-child { border-bottom: 0; }
+.vocabulary-group > span { padding-top: .27rem; color: #7a626f; font: 500 .59rem "DM Mono", monospace; text-transform: uppercase; }
+.vocabulary-group > div { display: flex; flex-wrap: wrap; gap: .3rem; }
+.vocabulary-group button { padding: .24rem .45rem; border: 1px solid #9b858d; border-radius: 99px; background: #f3e7ca; color: #4e3b4c; font-size: .61rem; cursor: pointer; }
+.vocabulary-group button:hover { border-color: var(--orange); background: var(--orange); color: #fff8e7; }
 .chip-groups { display: grid; gap: .75rem; }
 .chip-row { display: flex; gap: .35rem; align-items: center; flex-wrap: wrap; }
 .chip-row > span { width: 5.2rem; color: #796773; font: 500 .65rem "DM Mono", monospace; text-transform: uppercase; }

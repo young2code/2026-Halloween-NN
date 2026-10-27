@@ -1,16 +1,23 @@
 import "./style.css";
 import { imageToAscii, imageToAsciiCells } from "./ascii";
 import { PumpkinGenerator } from "./inference";
-import { GROUPS, labelFromSelection, parsePrompt, type GroupName } from "./prompt";
+import {
+  GROUPS,
+  labelFromSelection,
+  parsePrompt,
+  VISUAL_VOCABULARY_SIZE,
+  VOCABULARY_BY_GROUP,
+  type GroupName,
+} from "./prompt";
 
 const app = document.querySelector<HTMLDivElement>("#app");
 if (!app) throw new Error("App root was not found.");
 
 const examples = [
-  "happy round orange pumpkin with star eyes and purple glow",
-  "tall pale spooky pumpkin with sleepy eyes and fangs",
-  "silly green lumpy pumpkin with round eyes and a witch hat",
-  "wide angry pirate pumpkin with triangle eyes and blue glow",
+  "cheerful plump amber pumpkin with starry eyes and violet glow",
+  "towering ivory haunted pumpkin with sleepy eyes and vampire fangs",
+  "goofy emerald bumpy pumpkin with button eyes and a wizard hat",
+  "broad furious pirate pumpkin with pointy eyes and cyan glow",
 ];
 
 app.innerHTML = `
@@ -44,6 +51,11 @@ app.innerHTML = `
           <label for="prompt">Tell the machine what you see</label>
           <textarea id="prompt" rows="4" maxlength="180">${examples[0]}</textarea>
           <p class="prompt-note" id="prompt-note">Try color, shape, mood, eyes, mouth, glow, and a hat.</p>
+          <details class="vocabulary-guide" open>
+            <summary><span><b>${VISUAL_VOCABULARY_SIZE}</b>-word prompt vocabulary</span><em>Click a word to try it</em></summary>
+            <p>These playful synonyms map onto the 28 attributes the neural network learned.</p>
+            <div class="vocabulary-list" id="vocabulary-list"></div>
+          </details>
           <div class="chip-groups" id="chips"></div>
           <div class="actions">
             <button class="carve-button" id="carve" type="submit" disabled><span>Carve it</span><b aria-hidden="true">✦</b></button>
@@ -155,6 +167,30 @@ function renderChips(): void {
   updateChips();
 }
 
+function renderVocabulary(): void {
+  const container = document.querySelector<HTMLDivElement>("#vocabulary-list")!;
+  (Object.keys(VOCABULARY_BY_GROUP) as GroupName[]).forEach((group) => {
+    const section = document.createElement("section");
+    section.className = "vocabulary-group";
+    const label = document.createElement("span");
+    label.textContent = group;
+    const terms = document.createElement("div");
+    VOCABULARY_BY_GROUP[group].forEach((term) => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.textContent = term;
+      button.addEventListener("click", () => {
+        promptInput.value = `${promptInput.value.trim()} ${term}`;
+        updatePromptFeedback();
+        promptInput.focus();
+      });
+      terms.append(button);
+    });
+    section.append(label, terms);
+    container.append(section);
+  });
+}
+
 function selectChip(group: GroupName, index: number): void {
   const parsed = parsePrompt(promptInput.value);
   const current = labelFromSelection(group, parsed.selections[group]);
@@ -178,7 +214,7 @@ function updatePromptFeedback(): void {
   const parsed = parsePrompt(promptInput.value);
   promptNote.textContent = parsed.unknown.length
     ? `Tiny vocabulary note: I don’t know “${parsed.unknown.join("”, “")}” yet, so those words will be ignored.`
-    : "All prompt words recognized. The chips show the 7 conditions sent to the network.";
+    : `All prompt words recognized from the ${VISUAL_VOCABULARY_SIZE}-word vocabulary. The chips show the 7 conditions sent to the network.`;
   promptNote.classList.toggle("warning", parsed.unknown.length > 0);
   updateChips();
 }
@@ -265,6 +301,7 @@ copyAsciiButton.addEventListener("click", async () => {
 });
 
 renderChips();
+renderVocabulary();
 updatePromptFeedback();
 if ("serviceWorker" in navigator && import.meta.env.PROD) {
   window.addEventListener("load", () => void navigator.serviceWorker.register(`${import.meta.env.BASE_URL}sw.js`));

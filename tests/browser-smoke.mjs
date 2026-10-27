@@ -51,6 +51,12 @@ async function exercise(forceWasm) {
   ) {
     throw new Error(`Output frames were not equal-sized and side by side: ${JSON.stringify(frames)}`);
   }
+  const widestAsciiRow = await page.locator(".ascii-row").evaluateAll((rows) =>
+    Math.max(...rows.map((row) => row.getBoundingClientRect().width)),
+  );
+  if (widestAsciiRow < frames[1].width * 0.75) {
+    throw new Error(`ASCII portrait is too small: ${widestAsciiRow}px inside a ${frames[1].width}px frame.`);
+  }
   if (!forceWasm) {
     await page.screenshot({ path: path.resolve("training/runs/browser-preview.png"), fullPage: true });
   }

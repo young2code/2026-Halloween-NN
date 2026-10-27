@@ -30,15 +30,20 @@ async function exercise(forceWasm) {
   await page.locator("#seed").fill("4242");
   await page.locator("#carve").click();
   await page.locator("#generation-status").filter({ hasText: "seed 4242" }).waitFor({ timeout: 30_000 });
-  await page.locator("#ascii-panel").waitFor({ state: "visible" });
+  await page.locator("#ascii-output").waitFor({ state: "visible" });
   const asciiRows = await page.locator(".ascii-row").count();
+  if ((await page.locator("#ascii-toggle").innerText()).trim() !== "SHOW IMAGE") {
+    throw new Error("ASCII portrait was not the default result view.");
+  }
+  if (!forceWasm) {
+    await page.screenshot({ path: path.resolve("training/runs/browser-preview.png"), fullPage: true });
+  }
+  await page.locator("#ascii-toggle").click();
+  await page.locator("#pumpkin-canvas").waitFor({ state: "visible" });
   const canvasSignal = await page.locator("#pumpkin-canvas").evaluate((canvas) => {
     const context = canvas.getContext("2d");
     return [...context.getImageData(0, 0, 8, 8).data].reduce((sum, value) => sum + value, 0);
   });
-  if (!forceWasm) {
-    await page.screenshot({ path: path.resolve("training/runs/browser-preview.png"), fullPage: true });
-  }
   await context.close();
   const actionableErrors = errors.filter((error) => !error.includes("Unknown CPU vendor"));
   if (actionableErrors.length) throw new Error(`${forceWasm ? "WASM" : "default"} browser errors:\n${actionableErrors.join("\n")}`);

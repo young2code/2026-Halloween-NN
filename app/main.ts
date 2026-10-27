@@ -57,23 +57,23 @@ app.innerHTML = `
         </form>
 
         <div class="result-panel">
+          <div class="result-heading">
+            <p class="eyebrow">The same pumpkin, translated</p>
+            <h3 id="output-title">Colored ASCII portrait</h3>
+          </div>
           <div class="canvas-frame" id="canvas-frame">
-            <canvas id="pumpkin-canvas" width="512" height="512" aria-label="Generated jack-o'-lantern"></canvas>
+            <pre id="ascii-output" aria-label="Colored ASCII version of the generated pumpkin"></pre>
+            <canvas id="pumpkin-canvas" width="512" height="512" aria-label="Generated jack-o'-lantern" hidden></canvas>
             <div class="canvas-placeholder" id="placeholder"><span>✦</span><b>Warming the lantern…</b><small>The tiny model loads once, then stays on your device.</small></div>
           </div>
           <div class="result-actions">
             <button type="button" id="again" disabled>Carve again</button>
-            <button type="button" id="ascii-toggle" disabled>Hide ASCII</button>
+            <button type="button" id="ascii-toggle" aria-pressed="true" disabled>Show image</button>
+            <button type="button" id="copy-ascii" disabled>Copy plain text</button>
             <button type="button" id="download" disabled>Download PNG</button>
           </div>
           <p class="generation-status" id="generation-status" aria-live="polite"></p>
         </div>
-      </div>
-
-      <div class="ascii-panel" id="ascii-panel">
-        <div><p class="eyebrow">The same pumpkin, translated</p><h3>Colored ASCII portrait</h3></div>
-        <pre id="ascii-output" aria-label="Colored ASCII version of the generated pumpkin"></pre>
-        <button type="button" id="copy-ascii">Copy plain text</button>
       </div>
     </section>
 
@@ -120,8 +120,9 @@ const surpriseButton = document.querySelector<HTMLButtonElement>("#surprise")!;
 const againButton = document.querySelector<HTMLButtonElement>("#again")!;
 const downloadButton = document.querySelector<HTMLButtonElement>("#download")!;
 const asciiToggle = document.querySelector<HTMLButtonElement>("#ascii-toggle")!;
-const asciiPanel = document.querySelector<HTMLElement>("#ascii-panel")!;
+const copyAsciiButton = document.querySelector<HTMLButtonElement>("#copy-ascii")!;
 const asciiOutput = document.querySelector<HTMLElement>("#ascii-output")!;
+const outputTitle = document.querySelector<HTMLElement>("#output-title")!;
 const runtimePill = document.querySelector<HTMLElement>("#runtime-pill")!;
 const placeholder = document.querySelector<HTMLElement>("#placeholder")!;
 const status = document.querySelector<HTMLElement>("#generation-status")!;
@@ -225,6 +226,7 @@ async function generate(): Promise<void> {
     againButton.disabled = false;
     downloadButton.disabled = false;
     asciiToggle.disabled = false;
+    copyAsciiButton.disabled = false;
   } catch (error) {
     status.textContent = `Generation failed: ${error instanceof Error ? error.message : String(error)}`;
   } finally {
@@ -245,9 +247,12 @@ againButton.addEventListener("click", () => {
   void generate();
 });
 asciiToggle.addEventListener("click", () => {
-  asciiPanel.hidden = !asciiPanel.hidden;
-  asciiToggle.textContent = asciiPanel.hidden ? "Show ASCII" : "Hide ASCII";
-  if (!asciiPanel.hidden) asciiPanel.scrollIntoView({ behavior: "smooth", block: "center" });
+  const showAscii = asciiOutput.hidden;
+  asciiOutput.hidden = !showAscii;
+  canvas.hidden = showAscii;
+  asciiToggle.textContent = showAscii ? "Show image" : "Show ASCII";
+  asciiToggle.setAttribute("aria-pressed", String(showAscii));
+  outputTitle.textContent = showAscii ? "Colored ASCII portrait" : "Generated pumpkin";
 });
 downloadButton.addEventListener("click", () => {
   const link = document.createElement("a");
@@ -255,7 +260,7 @@ downloadButton.addEventListener("click", () => {
   link.href = canvas.toDataURL("image/png");
   link.click();
 });
-document.querySelector<HTMLButtonElement>("#copy-ascii")!.addEventListener("click", async () => {
+copyAsciiButton.addEventListener("click", async () => {
   if (lastImage) await navigator.clipboard.writeText(imageToAscii(lastImage));
 });
 

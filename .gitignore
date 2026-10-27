@@ -1,0 +1,17 @@
+.venv/
+.tools/
+node_modules/
+dist/
+training/runs/
+training/data/
+training/__pycache__/
+export/__pycache__/
+.pytest_cache/
+*.pyc
+*.pyo
+*.log
+*.tsbuildinfo
+.DS_Store
+.env*
+!.env.example
+

@@ -1,0 +1,9 @@
+# For CUDA training on Windows, prefer environment.yml. These packages cover
+# dataset generation, export, validation, and tests in an existing torch env.
+numpy>=1.26,<3
+Pillow>=10.3,<13
+onnx==1.19.1
+onnxruntime==1.23.2
+pytest==9.0.1
+ruff==0.14.6
+

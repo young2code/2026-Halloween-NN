@@ -144,7 +144,7 @@ export const VISUAL_VOCABULARY_SIZE = Object.values(VOCABULARY_BY_GROUP).flat().
 const ignored = new Set([
   "a", "an", "the", "with", "and", "pumpkin", "jack", "o", "lantern", "jackolantern",
   "of", "in", "make", "me", "please", "carved", "face", "glowing", "glow", "eyes", "eye",
-  "hat", "that", "has", "is", "very", "little", "big",
+  "hat", "that", "has", "is", "very", "little", "big", "carve", "plus",
 ]);
 
 export function parsePrompt(input: string): ParsedPrompt {

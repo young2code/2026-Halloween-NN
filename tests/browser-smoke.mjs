@@ -27,6 +27,19 @@ async function exercise(forceWasm) {
   if (vocabularyTerms !== 100) throw new Error(`Expected 100 visible vocabulary terms, found ${vocabularyTerms}.`);
   const runtime = (await page.locator("#runtime-pill").innerText()).trim();
   const firstStatus = (await page.locator("#generation-status").innerText()).trim();
+  const clickTime = await page.evaluate(() => Date.now() >>> 0);
+  await page.locator("#surprise").click();
+  const surpriseSeed = Number(await page.locator("#seed").inputValue());
+  const seedDistance = Math.min(
+    Math.abs(surpriseSeed - clickTime),
+    2 ** 32 - Math.abs(surpriseSeed - clickTime),
+  );
+  if (seedDistance > 5_000) throw new Error(`Surprise seed ${surpriseSeed} was not based on click time ${clickTime}.`);
+  const surpriseWords = (await page.locator("#prompt").inputValue()).match(/[a-z]+(?:-[a-z]+)*/gi) ?? [];
+  if (surpriseWords.length < 12) throw new Error(`Surprise prompt was too simple: ${surpriseWords.join(" ")}`);
+  if (!(await page.locator("#prompt-note").innerText()).includes("All prompt words recognized")) {
+    throw new Error("Surprise prompt contained words outside the supported vocabulary.");
+  }
   await page.locator("#prompt").fill("tall green spooky pumpkin with star eyes fangs and blue glow");
   await page.locator("details:not(.vocabulary-guide) summary").click();
   await page.locator("#seed").fill("4242");

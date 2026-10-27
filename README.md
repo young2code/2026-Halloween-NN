@@ -26,6 +26,11 @@ silly green lumpy pumpkin with round eyes and a witch hat
 Unknown words are shown rather than silently pretending that the model
 understands unrestricted English.
 
+The dice button takes the current click time as its numeric seed, independently
+chooses terms from all seven attribute groups, and writes them as a varied
+12–18-word sentence. The extra connective words make the prompt more natural;
+the small network still receives the same seven learned conditions.
+
 ## What happens when I click “Carve it”?
 
 ```text

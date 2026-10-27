@@ -1,6 +1,7 @@
 import "./style.css";
 import { imageToAscii, imageToAsciiCells } from "./ascii";
 import { PumpkinGenerator } from "./inference";
+import { mulberry32 } from "./random";
 import {
   GROUPS,
   labelFromSelection,
@@ -13,12 +14,32 @@ import {
 const app = document.querySelector<HTMLDivElement>("#app");
 if (!app) throw new Error("App root was not found.");
 
-const examples = [
-  "cheerful plump amber pumpkin with starry eyes and violet glow",
-  "towering ivory haunted pumpkin with sleepy eyes and vampire fangs",
-  "goofy emerald bumpy pumpkin with button eyes and a wizard hat",
-  "broad furious pirate pumpkin with pointy eyes and cyan glow",
-];
+const defaultPrompt = "cheerful plump amber pumpkin with starry eyes and violet glow";
+
+function timeSeed(): number {
+  return Date.now() >>> 0;
+}
+
+function surprisePrompt(seed: number): string {
+  const random = mulberry32(seed);
+  const pick = (group: GroupName): string => {
+    const terms = VOCABULARY_BY_GROUP[group];
+    return terms[Math.floor(random() * terms.length)];
+  };
+  const shape = pick("shape");
+  const expression = pick("expression");
+  const eyes = pick("eyes");
+  const mouth = pick("mouth");
+  const color = pick("color");
+  const glow = pick("glow");
+  const accessory = pick("accessory");
+  const templates = [
+    `please carve me a ${expression} ${shape} ${color} pumpkin with ${eyes}, ${mouth}, ${glow}, and ${accessory}`,
+    `make me a ${shape} ${color} jack o lantern that is ${expression} with ${eyes}, ${mouth}, ${glow}, and ${accessory}`,
+    `a very ${expression} ${shape} ${color} pumpkin with ${eyes} and ${mouth}, plus ${glow} and ${accessory}`,
+  ];
+  return templates[Math.floor(random() * templates.length)];
+}
 
 app.innerHTML = `
   <header class="hero">
@@ -49,7 +70,7 @@ app.innerHTML = `
       <div class="studio-grid">
         <form class="prompt-panel" id="prompt-form">
           <label for="prompt">Tell the machine what you see</label>
-          <textarea id="prompt" rows="4" maxlength="180">${examples[0]}</textarea>
+          <textarea id="prompt" rows="4" maxlength="180">${defaultPrompt}</textarea>
           <p class="prompt-note" id="prompt-note">Try color, shape, mood, eyes, mouth, glow, and a hat.</p>
           <details class="vocabulary-guide" open>
             <summary><span><b>${VISUAL_VOCABULARY_SIZE}</b>-word prompt vocabulary</span><em>Click a word to try it</em></summary>
@@ -59,7 +80,7 @@ app.innerHTML = `
           <div class="chip-groups" id="chips"></div>
           <div class="actions">
             <button class="carve-button" id="carve" type="submit" disabled><span>Carve it</span><b aria-hidden="true">✦</b></button>
-            <button class="dice-button" id="surprise" type="button" aria-label="Use a surprise prompt">⚄</button>
+            <button class="dice-button" id="surprise" type="button" aria-label="Create a time-seeded surprise prompt" title="New prompt and seed from the current time">⚄</button>
           </div>
           <details>
             <summary>Experiment controls</summary>
@@ -280,12 +301,14 @@ async function generate(): Promise<void> {
 promptInput.addEventListener("input", updatePromptFeedback);
 promptForm.addEventListener("submit", (event) => { event.preventDefault(); void generate(); });
 surpriseButton.addEventListener("click", () => {
-  promptInput.value = examples[Math.floor(Math.random() * examples.length)];
-  seedInput.value = String(crypto.getRandomValues(new Uint32Array(1))[0]);
+  const seed = timeSeed();
+  promptInput.value = surprisePrompt(seed);
+  seedInput.value = String(seed);
   updatePromptFeedback();
+  status.textContent = `Surprise ready from time seed ${seed}.`;
 });
 againButton.addEventListener("click", () => {
-  seedInput.value = String(crypto.getRandomValues(new Uint32Array(1))[0]);
+  seedInput.value = String(timeSeed());
   void generate();
 });
 downloadButton.addEventListener("click", () => {

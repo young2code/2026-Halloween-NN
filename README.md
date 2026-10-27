@@ -95,6 +95,15 @@ This makes the dataset:
 - useful for showing the difference between a rule-based renderer and a neural
   network that learns to imitate its distribution.
 
+### Sample training images
+
+![A grid of 16 labeled pixel-art jack-o'-lantern samples from the procedural training dataset](docs/dataset-samples.png)
+
+These are the first 16 samples produced by the released dataset recipe. Each
+caption begins with that image's automatically assigned conditions. Running
+`python -m training.preview_dataset` recreates this exact grid from the fixed
+seeds; it does not download any assets.
+
 See [DATASET_CARD.md](DATASET_CARD.md) for provenance and limitations.
 
 ## Architecture

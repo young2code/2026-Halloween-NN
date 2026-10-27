@@ -9,7 +9,7 @@ from training.dataset import labels_for_seed, render_pumpkin
 
 
 def main() -> None:
-    output = Path("training/runs/dataset-preview.png")
+    output = Path("docs/dataset-samples.png")
     output.parent.mkdir(parents=True, exist_ok=True)
     cell, caption = 128, 25
     canvas = Image.new("RGB", (cell * 4, (cell + caption) * 4), (13, 8, 24))

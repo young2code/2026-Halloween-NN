@@ -63,14 +63,14 @@ app.innerHTML = `
           </div>
           <div class="result-actions">
             <button type="button" id="again" disabled>Carve again</button>
-            <button type="button" id="ascii-toggle" disabled>Show ASCII</button>
+            <button type="button" id="ascii-toggle" disabled>Hide ASCII</button>
             <button type="button" id="download" disabled>Download PNG</button>
           </div>
           <p class="generation-status" id="generation-status" aria-live="polite"></p>
         </div>
       </div>
 
-      <div class="ascii-panel" id="ascii-panel" hidden>
+      <div class="ascii-panel" id="ascii-panel">
         <div><p class="eyebrow">The same pumpkin, translated</p><h3>Colored ASCII portrait</h3></div>
         <pre id="ascii-output" aria-label="Colored ASCII version of the generated pumpkin"></pre>
         <button type="button" id="copy-ascii">Copy plain text</button>

@@ -30,7 +30,6 @@ async function exercise(forceWasm) {
   await page.locator("#seed").fill("4242");
   await page.locator("#carve").click();
   await page.locator("#generation-status").filter({ hasText: "seed 4242" }).waitFor({ timeout: 30_000 });
-  await page.locator("#ascii-toggle").click();
   await page.locator("#ascii-panel").waitFor({ state: "visible" });
   const asciiRows = await page.locator(".ascii-row").count();
   const canvasSignal = await page.locator("#pumpkin-canvas").evaluate((canvas) => {

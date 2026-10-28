@@ -27,6 +27,11 @@ async function exercise(forceWasm) {
   if (vocabularyTerms !== 100) throw new Error(`Expected 100 visible vocabulary terms, found ${vocabularyTerms}.`);
   const runtime = (await page.locator("#runtime-pill").innerText()).trim();
   const firstStatus = (await page.locator("#generation-status").innerText()).trim();
+  if ((await page.locator("#surprise").innerText()).trim().toUpperCase() !== "SURPRISE ME") {
+    throw new Error("The surprise button does not have a visible text label.");
+  }
+  const diceIconSize = await page.locator("#surprise svg").evaluate((icon) => icon.getBoundingClientRect().width);
+  if (diceIconSize < 24) throw new Error(`The surprise dice icon is too small: ${diceIconSize}px.`);
   const clickTime = await page.evaluate(() => Date.now() >>> 0);
   await page.locator("#surprise").click();
   const surpriseSeed = Number(await page.locator("#seed").inputValue());

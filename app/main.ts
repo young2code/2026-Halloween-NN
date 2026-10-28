@@ -52,7 +52,15 @@ app.innerHTML = `
           </details>
           <div class="actions">
             <button class="carve-button" id="carve" type="submit" disabled><span>Carve it</span><b aria-hidden="true">✦</b></button>
-            <button class="dice-button" id="surprise" type="button" aria-label="Create a time-seeded surprise prompt" title="New prompt and seed from the current time">⚄</button>
+            <button class="dice-button" id="surprise" type="button" title="New prompt and seed from the current time">
+              <svg viewBox="0 0 32 32" aria-hidden="true">
+                <rect x="3" y="3" width="26" height="26" rx="4"></rect>
+                <circle cx="10" cy="10" r="2"></circle><circle cx="22" cy="10" r="2"></circle>
+                <circle cx="16" cy="16" r="2"></circle>
+                <circle cx="10" cy="22" r="2"></circle><circle cx="22" cy="22" r="2"></circle>
+              </svg>
+              <span>Surprise me</span>
+            </button>
           </div>
           <details>
             <summary>Experiment controls</summary>

@@ -40,6 +40,8 @@ async function exercise(forceWasm) {
     2 ** 32 - Math.abs(surpriseSeed - clickTime),
   );
   if (seedDistance > 5_000) throw new Error(`Surprise seed ${surpriseSeed} was not based on click time ${clickTime}.`);
+  await page.locator("#generation-status").filter({ hasText: `seed ${surpriseSeed}` }).waitFor({ timeout: 30_000 });
+  if (await page.locator("#surprise").isDisabled()) throw new Error("The surprise button stayed disabled after auto-carving.");
   const surpriseWords = (await page.locator("#prompt").inputValue()).match(/[a-z]+(?:-[a-z]+)*/gi) ?? [];
   if (surpriseWords.length < 12) throw new Error(`Surprise prompt was too simple: ${surpriseWords.join(" ")}`);
   if (!(await page.locator("#prompt-note").innerText()).includes("All prompt words recognized")) {

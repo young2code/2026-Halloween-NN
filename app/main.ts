@@ -52,7 +52,7 @@ app.innerHTML = `
           </details>
           <div class="actions">
             <button class="carve-button" id="carve" type="submit" disabled><span>Carve it</span><b aria-hidden="true">✦</b></button>
-            <button class="dice-button" id="surprise" type="button" title="New prompt and seed from the current time">
+            <button class="dice-button" id="surprise" type="button" title="Create and carve a new time-seeded surprise" disabled>
               <svg viewBox="0 0 32 32" aria-hidden="true">
                 <rect x="3" y="3" width="26" height="26" rx="4"></rect>
                 <circle cx="10" cy="10" r="2"></circle><circle cx="22" cy="10" r="2"></circle>
@@ -236,6 +236,7 @@ async function generate(): Promise<void> {
   if (busy || !generator.runtime) return;
   busy = true;
   carveButton.disabled = true;
+  surpriseButton.disabled = true;
   againButton.disabled = true;
   status.textContent = "The generator is imagining…";
   const started = performance.now();
@@ -255,6 +256,7 @@ async function generate(): Promise<void> {
   } finally {
     busy = false;
     carveButton.disabled = false;
+    surpriseButton.disabled = false;
   }
 }
 
@@ -265,7 +267,7 @@ surpriseButton.addEventListener("click", () => {
   promptInput.value = surprisePrompt(seed);
   seedInput.value = String(seed);
   updatePromptFeedback();
-  status.textContent = `Surprise ready from time seed ${seed}.`;
+  void generate();
 });
 againButton.addEventListener("click", () => {
   seedInput.value = String(timeSeed());
@@ -290,6 +292,7 @@ void generator.initialize().then((runtime) => {
   runtimePill.innerHTML = `<span></span><b>${runtime === "webgpu" ? "WebGPU" : "CPU / WASM"}</b>`;
   runtimePill.classList.add("ready");
   carveButton.disabled = false;
+  surpriseButton.disabled = false;
   status.textContent = "The tiny generator is ready.";
   return generate();
 }).catch((error: unknown) => {
